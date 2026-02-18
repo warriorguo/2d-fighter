@@ -57,23 +57,30 @@ export function createCollisionSystem(sim: GameSimulation) {
           // Damage enemy
           const hp = world.health.get(enemy);
           if (hp) {
+            if (hp.invulnTicks > 0) {
+              destroyEntity(world, bullet);
+              break;
+            }
             hp.current -= bCol.damage;
             debugLog.log('HIT', `Enemy#${enemy} hit dmg=${bCol.damage} hp=${hp.current}/${hp.max}`);
             if (hp.current <= 0) {
-              // Enemy killed
-              debugLog.log('KILL', `Enemy#${enemy} killed at (${toFloat(ePos.x).toFixed(0)}, ${toFloat(ePos.y).toFixed(0)})`);
-              createExplosion(world, ePos.x, ePos.y, 32);
-              // Score
-              for (const [, tag] of world.playerTag) {
-                tag.score += 100;
+              // Boss entities are handled by the boss system (phase transitions / defeat)
+              const isBoss = world.bossTag.has(enemy);
+              if (!isBoss) {
+                debugLog.log('KILL', `Enemy#${enemy} killed at (${toFloat(ePos.x).toFixed(0)}, ${toFloat(ePos.y).toFixed(0)})`);
+                createExplosion(world, ePos.x, ePos.y, 32);
+                // Score
+                for (const [, tag] of world.playerTag) {
+                  tag.score += 100;
+                }
+                // Random drop
+                if (sim.rng.nextInt(100) < 20) {
+                  const dropTypes = [DropType.WeaponUpgrade, DropType.Bomb, DropType.ScoreSmall, DropType.ScoreLarge];
+                  const dt = dropTypes[sim.rng.nextInt(dropTypes.length)];
+                  createDrop(world, ePos.x, ePos.y, dt);
+                }
+                destroyEntity(world, enemy);
               }
-              // Random drop
-              if (sim.rng.nextInt(100) < 20) {
-                const dropTypes = [DropType.WeaponUpgrade, DropType.Bomb, DropType.ScoreSmall, DropType.ScoreLarge];
-                const dt = dropTypes[sim.rng.nextInt(dropTypes.length)];
-                createDrop(world, ePos.x, ePos.y, dt);
-              }
-              destroyEntity(world, enemy);
             }
           }
           destroyEntity(world, bullet);
