@@ -2,7 +2,7 @@
  * Co-op lobby screen.
  */
 
-import { GAME_WIDTH, GAME_HEIGHT } from 'shared/constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, MAX_PLAYERS } from 'shared/constants.js';
 
 const LEVEL_NAMES = [
   'Level 1 — Sky Assault',
@@ -19,6 +19,7 @@ export interface LobbyState {
   inputCode: string;
   connected: boolean;
   playerCount: number;
+  maxPlayers: number;
   mode: 'none' | 'creating' | 'joining' | 'waiting';
   error: string;
   levelSelection: number;
@@ -30,6 +31,7 @@ export function createLobbyState(): LobbyState {
     inputCode: '',
     connected: false,
     playerCount: 0,
+    maxPlayers: 2,
     mode: 'none',
     error: '',
     levelSelection: 0,
@@ -55,10 +57,10 @@ export function drawLobby(ctx: CanvasRenderingContext2D, state: LobbyState, tick
     // Level selection
     ctx.font = '12px monospace';
     ctx.fillStyle = '#888888';
-    ctx.fillText('Select Level:', GAME_WIDTH / 2, 110);
+    ctx.fillText('Select Level:', GAME_WIDTH / 2, 100);
 
     for (let i = 0; i < LEVEL_NAMES.length; i++) {
-      const y = 145 + i * 32;
+      const y = 130 + i * 28;
       const selected = i === state.levelSelection;
       ctx.font = selected ? 'bold 14px monospace' : '12px monospace';
       ctx.fillStyle = selected ? '#ffffff' : LEVEL_COLORS[i];
@@ -71,14 +73,25 @@ export function drawLobby(ctx: CanvasRenderingContext2D, state: LobbyState, tick
       }
     }
 
+    // Player count selector
+    ctx.font = '12px monospace';
+    ctx.fillStyle = '#888888';
+    ctx.fillText('Players:', GAME_WIDTH / 2, 305);
+    ctx.font = 'bold 18px monospace';
+    ctx.fillStyle = '#ffaa44';
+    ctx.fillText(`< ${state.maxPlayers} >`, GAME_WIDTH / 2, 330);
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#666';
+    ctx.fillText('Left/Right to change (2-4)', GAME_WIDTH / 2, 352);
+
     // Actions
     ctx.font = '16px monospace';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText('C — Create Room', GAME_WIDTH / 2, 340);
-    ctx.fillText('J — Join Room', GAME_WIDTH / 2, 375);
+    ctx.fillText('C — Create Room', GAME_WIDTH / 2, 390);
+    ctx.fillText('J — Join Room', GAME_WIDTH / 2, 420);
     ctx.font = '11px monospace';
     ctx.fillStyle = '#666';
-    ctx.fillText('Up/Down to select level, Esc to go back', GAME_WIDTH / 2, 420);
+    ctx.fillText('Up/Down: level, Left/Right: players, Esc: back', GAME_WIDTH / 2, 460);
   } else if (state.mode === 'creating' || state.mode === 'waiting') {
     // Show selected level
     ctx.font = '13px monospace';
@@ -93,10 +106,11 @@ export function drawLobby(ctx: CanvasRenderingContext2D, state: LobbyState, tick
     ctx.fillText(state.roomCode || '...', GAME_WIDTH / 2, 260);
     ctx.font = '14px monospace';
     ctx.fillStyle = '#888888';
-    ctx.fillText(`Players: ${state.playerCount}/2`, GAME_WIDTH / 2, 310);
+    ctx.fillText(`Players: ${state.playerCount}/${state.maxPlayers}`, GAME_WIDTH / 2, 310);
+    const remaining = state.maxPlayers - state.playerCount;
     const alpha = Math.abs(Math.sin(tick * 0.05));
     ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-    ctx.fillText('Waiting for player 2...', GAME_WIDTH / 2, 350);
+    ctx.fillText(remaining > 0 ? `Waiting for ${remaining} more player${remaining > 1 ? 's' : ''}...` : 'Starting...', GAME_WIDTH / 2, 350);
   } else if (state.mode === 'joining') {
     ctx.font = '14px monospace';
     ctx.fillStyle = '#aaaaaa';

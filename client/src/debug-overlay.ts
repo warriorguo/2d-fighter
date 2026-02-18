@@ -5,7 +5,7 @@
 
 import type { World } from 'shared/ecs/types.js';
 import { toFloat } from 'shared/math/fixed.js';
-import { GAME_WIDTH, GAME_HEIGHT } from 'shared/constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, PLAYER_COLORS } from 'shared/constants.js';
 import { debugLog, type DebugEvent } from 'shared/debug.js';
 import type { ScoreState } from 'shared/systems/score.js';
 import type { WaveState } from 'shared/systems/wave.js';
@@ -97,7 +97,7 @@ export class DebugOverlay {
       const pos = world.position.get(entity);
       const hp = world.health.get(entity);
       if (pos && hp) {
-        ctx.fillStyle = tag.playerId === 0 ? '#00ccff' : '#00ff88';
+        ctx.fillStyle = PLAYER_COLORS[tag.playerId % PLAYER_COLORS.length];
         ctx.fillText(
           `P${tag.playerId + 1}: (${toFloat(pos.x).toFixed(0)},${toFloat(pos.y).toFixed(0)}) HP:${hp.current}`,
           panelX, y,

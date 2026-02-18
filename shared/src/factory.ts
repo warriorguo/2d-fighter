@@ -11,14 +11,16 @@ import {
   PLAYER_SPEED, PLAYER_HITBOX_RADIUS,
   PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_START_HP, PLAYER_START_BOMBS,
   PLAYER_FIRE_RATE, PLAYER_BULLET_SPEED,
+  PLAYER_COLORS,
 } from './constants.js';
 
-export function createPlayer(world: World, playerId: number): Entity {
+export function createPlayer(world: World, playerId: number, totalPlayers: number = 1): Entity {
   const e = createEntity(world);
-  // Position: center-bottom area, offset for player 2
-  const xOffset = playerId === 0 ? -40 : 40;
+  // Distribute players evenly across the bottom area
+  const spacing = GAME_WIDTH / (totalPlayers + 1);
+  const xPos = spacing * (playerId + 1);
   world.position.set(e, {
-    x: toFixed(GAME_WIDTH / 2 + xOffset),
+    x: toFixed(xPos),
     y: toFixed(GAME_HEIGHT - 80),
   });
   world.velocity.set(e, { vx: 0, vy: 0 });
@@ -36,7 +38,7 @@ export function createPlayer(world: World, playerId: number): Entity {
     type: SpriteType.Player,
     width: PLAYER_WIDTH,
     height: PLAYER_HEIGHT,
-    color: playerId === 0 ? '#00ccff' : '#00ff88',
+    color: PLAYER_COLORS[playerId % PLAYER_COLORS.length],
     frame: 0,
     animTick: 0,
   });

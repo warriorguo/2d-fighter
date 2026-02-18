@@ -3,7 +3,7 @@
  */
 
 import { GameSimulation } from 'shared/simulation.js';
-import { GAME_WIDTH, GAME_HEIGHT, TICK_MS } from 'shared/constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, TICK_MS, MAX_PLAYERS } from 'shared/constants.js';
 import { createPlayer } from 'shared/factory.js';
 import { createMovementSystem } from 'shared/systems/movement.js';
 import { createShootingSystem } from 'shared/systems/shooting.js';
@@ -167,6 +167,10 @@ function handleLobbyKey(e: KeyboardEvent): void {
       lobbyState.levelSelection = (lobbyState.levelSelection - 1 + levelCount) % levelCount;
     } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
       lobbyState.levelSelection = (lobbyState.levelSelection + 1) % levelCount;
+    } else if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+      lobbyState.maxPlayers = Math.max(2, lobbyState.maxPlayers - 1);
+    } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+      lobbyState.maxPlayers = Math.min(MAX_PLAYERS, lobbyState.maxPlayers + 1);
     } else if (e.code === 'KeyC') {
       selectedLevel = lobbyState.levelSelection;
       lobbyState.mode = 'creating';
@@ -240,26 +244,28 @@ function handlePauseKey(e: KeyboardEvent): void {
 
 function connectAndCreateRoom(): void {
   networkClient = new NetworkClient();
-  networkClient.onRoomCreated = (code) => {
+  networkClient.onRoomCreated = (code, maxPlayers) => {
     lobbyState.roomCode = code;
     lobbyState.playerCount = 1;
+    lobbyState.maxPlayers = maxPlayers;
     lobbyState.mode = 'waiting';
   };
-  networkClient.onPlayerJoined = (count) => {
+  networkClient.onPlayerJoined = (count, maxPlayers) => {
     lobbyState.playerCount = count;
+    lobbyState.maxPlayers = maxPlayers;
   };
   // Both creator and joiner start from the server's game_start message
   // so they share the same seed and get correct playerIds
-  networkClient.onGameStart = (seed, playerId, levelIndex) => {
+  networkClient.onGameStart = (seed, playerId, playerCount, levelIndex) => {
     isCoopMode = true;
     selectedLevel = levelIndex;
-    startCoopGame(seed, playerId);
+    startCoopGame(seed, playerId, playerCount);
   };
   networkClient.onError = (msg) => {
     lobbyState.error = msg;
   };
   networkClient.connect().then(() => {
-    networkClient!.createRoom(selectedLevel);
+    networkClient!.createRoom(selectedLevel, lobbyState.maxPlayers);
   }).catch(() => {
     lobbyState.error = 'Failed to connect to server';
   });
@@ -267,10 +273,10 @@ function connectAndCreateRoom(): void {
 
 function connectAndJoinRoom(code: string): void {
   networkClient = new NetworkClient();
-  networkClient.onGameStart = (seed, playerId, levelIndex) => {
+  networkClient.onGameStart = (seed, playerId, playerCount, levelIndex) => {
     isCoopMode = true;
     selectedLevel = levelIndex;
-    startCoopGame(seed, playerId);
+    startCoopGame(seed, playerId, playerCount);
   };
   networkClient.onError = (msg) => {
     lobbyState.error = msg;
@@ -294,7 +300,7 @@ function startGame(playerCount: number, seed?: number): void {
 
   // Create players
   for (let i = 0; i < playerCount; i++) {
-    createPlayer(sim.world, i);
+    createPlayer(sim.world, i, playerCount);
   }
 
   // Init states
@@ -323,11 +329,11 @@ function startGame(playerCount: number, seed?: number): void {
   lastTime = performance.now();
 }
 
-function startCoopGame(seed: number, playerId: number): void {
+function startCoopGame(seed: number, playerId: number, playerCount: number): void {
   if (networkClient) {
     lockstep = new LockstepManager(networkClient, playerId);
   }
-  startGame(2, seed);
+  startGame(playerCount, seed);
 }
 
 function loop(now: number): void {

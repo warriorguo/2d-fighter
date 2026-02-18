@@ -71,12 +71,14 @@ wss.on('connection', (ws: WebSocket) => {
     switch (msg.type) {
       case 'create_room': {
         const levelIdx = typeof msg.levelIndex === 'number' ? (msg.levelIndex | 0) : 0;
-        const room = createRoom(ws, levelIdx);
+        const maxP = typeof msg.maxPlayers === 'number' ? (msg.maxPlayers | 0) : 2;
+        const room = createRoom(ws, levelIdx, maxP);
         ws.send(JSON.stringify({
           type: 'room_created',
           code: room.code,
+          maxPlayers: room.maxPlayers,
         }));
-        console.log(`Room created: ${room.code} (level ${levelIdx})`);
+        console.log(`Room created: ${room.code} (level ${levelIdx}, ${room.maxPlayers}P)`);
         break;
       }
 
@@ -98,11 +100,12 @@ wss.on('connection', (ws: WebSocket) => {
           player.send(JSON.stringify({
             type: 'player_joined',
             count: room.players.length,
+            maxPlayers: room.maxPlayers,
           }));
         }
 
         // If room is full, start the game
-        if (room.players.length === 2) {
+        if (room.players.length >= room.maxPlayers) {
           room.state = 'playing';
           for (const player of room.players) {
             const playerId = room.playerIds.get(player) ?? 0;
@@ -110,6 +113,7 @@ wss.on('connection', (ws: WebSocket) => {
               type: 'game_start',
               seed: room.seed,
               playerId,
+              playerCount: room.players.length,
               levelIndex: room.levelIndex,
             }));
           }

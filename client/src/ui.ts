@@ -3,7 +3,7 @@
  */
 
 import type { World } from 'shared/ecs/types.js';
-import { GAME_WIDTH, GAME_HEIGHT } from 'shared/constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, PLAYER_COLORS } from 'shared/constants.js';
 import type { ScoreState } from 'shared/systems/score.js';
 import type { BossState } from 'shared/systems/boss.js';
 import type { WaveState } from 'shared/systems/wave.js';
@@ -19,22 +19,43 @@ export class HUD {
     ctx.save();
     ctx.textBaseline = 'top';
 
-    let playerIdx = 0;
+    // Collect players into array sorted by playerId
+    const players: { entity: number; tag: { playerId: number; bombs: number; score: number; weaponLevel: number } }[] = [];
     for (const [entity, tag] of world.playerTag) {
+      players.push({ entity, tag });
+    }
+    players.sort((a, b) => a.tag.playerId - b.tag.playerId);
+
+    const totalPlayers = players.length;
+    // Layout: for 1-2 players use left/right, for 3-4 use corners
+    for (let i = 0; i < players.length; i++) {
+      const { entity, tag } = players[i];
       const hp = world.health.get(entity);
-      const x = playerIdx === 0 ? 10 : GAME_WIDTH - 160;
+
+      let x: number;
+      let baseY: number;
+      if (totalPlayers <= 2) {
+        x = i === 0 ? 10 : GAME_WIDTH - 160;
+        baseY = 8;
+      } else {
+        // 3-4 players: top-left stacked
+        x = (i % 2 === 0) ? 10 : GAME_WIDTH - 160;
+        baseY = i < 2 ? 8 : 68;
+      }
+
+      const color = PLAYER_COLORS[tag.playerId % PLAYER_COLORS.length];
 
       // Player label
       ctx.font = '12px monospace';
-      ctx.fillStyle = playerIdx === 0 ? '#00ccff' : '#00ff88';
-      ctx.fillText(`P${tag.playerId + 1}`, x, 8);
+      ctx.fillStyle = color;
+      ctx.fillText(`P${tag.playerId + 1}`, x, baseY);
 
       // HP bar
       if (hp) {
         const barW = 80;
         const barH = 8;
         const barX = x + 25;
-        const barY = 10;
+        const barY = baseY + 2;
         ctx.fillStyle = '#333';
         ctx.fillRect(barX, barY, barW, barH);
         const hpPct = Math.max(0, hp.current / hp.max);
@@ -48,20 +69,18 @@ export class HUD {
       // Score
       ctx.font = '14px monospace';
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(`${tag.score.toLocaleString()}`, x, 24);
+      ctx.fillText(`${tag.score.toLocaleString()}`, x, baseY + 16);
 
       // Bombs
       ctx.font = '11px monospace';
       ctx.fillStyle = '#ffaa00';
       let bombStr = '';
-      for (let i = 0; i < tag.bombs; i++) bombStr += '* ';
-      ctx.fillText(`B:${bombStr}`, x, 42);
+      for (let j = 0; j < tag.bombs; j++) bombStr += '* ';
+      ctx.fillText(`B:${bombStr}`, x, baseY + 34);
 
       // Weapon level
       ctx.fillStyle = '#ff4444';
-      ctx.fillText(`W:${'I'.repeat(Math.min(tag.weaponLevel, 5))}`, x, 56);
-
-      playerIdx++;
+      ctx.fillText(`W:${'I'.repeat(Math.min(tag.weaponLevel, 5))}`, x, baseY + 48);
     }
 
     // Combo / multiplier

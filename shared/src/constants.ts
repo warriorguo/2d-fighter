@@ -30,6 +30,10 @@ export const PLAYER_INVULN_TICKS = 120; // 2 seconds
 export const PLAYER_BULLET_SPEED: Fixed = toFixed(-10);
 export const PLAYER_FIRE_RATE = 6; // ticks between shots
 
+// Multiplayer
+export const MAX_PLAYERS = 4;
+export const PLAYER_COLORS = ['#00ccff', '#00ff88', '#ff44ff', '#ffaa44'];
+
 // Networking
 export const INPUT_DELAY_TICKS = 3;
 export const SNAPSHOT_INTERVAL = 300; // every 5 seconds

@@ -13,6 +13,7 @@ export interface Room {
   playerIds: Map<WebSocket, number>;
   seed: number;
   levelIndex: number;
+  maxPlayers: number;
   tickInputs: Map<number, Map<number, number>>; // tick → (playerId → inputBits)
 }
 
@@ -28,7 +29,7 @@ function generateCode(): string {
   return code;
 }
 
-export function createRoom(ws: WebSocket, levelIndex: number = 0): Room {
+export function createRoom(ws: WebSocket, levelIndex: number = 0, maxPlayers: number = 2): Room {
   let code = generateCode();
   while (rooms.has(code)) {
     code = generateCode();
@@ -41,6 +42,7 @@ export function createRoom(ws: WebSocket, levelIndex: number = 0): Room {
     playerIds: new Map([[ws, 0]]),
     seed: (Math.random() * 0xFFFFFFFF) | 0,
     levelIndex,
+    maxPlayers: Math.max(2, Math.min(4, maxPlayers)),
     tickInputs: new Map(),
   };
 
@@ -53,10 +55,11 @@ export function joinRoom(ws: WebSocket, code: string): Room | null {
   const room = rooms.get(code.toUpperCase());
   if (!room) return null;
   if (room.state !== 'waiting') return null;
-  if (room.players.length >= 2) return null;
+  if (room.players.length >= room.maxPlayers) return null;
 
+  const playerId = room.players.length;
   room.players.push(ws);
-  room.playerIds.set(ws, 1);
+  room.playerIds.set(ws, playerId);
   playerRooms.set(ws, room);
   return room;
 }

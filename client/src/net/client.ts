@@ -22,9 +22,9 @@ export class NetworkClient {
   private serverUrl: string;
 
   // Callbacks
-  onRoomCreated: ((code: string) => void) | null = null;
-  onPlayerJoined: ((count: number) => void) | null = null;
-  onGameStart: ((seed: number, playerId: number, levelIndex: number) => void) | null = null;
+  onRoomCreated: ((code: string, maxPlayers: number) => void) | null = null;
+  onPlayerJoined: ((count: number, maxPlayers: number) => void) | null = null;
+  onGameStart: ((seed: number, playerId: number, playerCount: number, levelIndex: number) => void) | null = null;
   onTickInputs: ((tick: number, inputs: number[]) => void) | null = null;
   onError: ((msg: string) => void) | null = null;
 
@@ -68,13 +68,18 @@ export class NetworkClient {
   private handleMessage(msg: NetMessage): void {
     switch (msg.type) {
       case 'room_created':
-        this.onRoomCreated?.(msg.code as string);
+        this.onRoomCreated?.(msg.code as string, (msg.maxPlayers as number) ?? 2);
         break;
       case 'player_joined':
-        this.onPlayerJoined?.(msg.count as number);
+        this.onPlayerJoined?.(msg.count as number, (msg.maxPlayers as number) ?? 2);
         break;
       case 'game_start':
-        this.onGameStart?.(msg.seed as number, msg.playerId as number, (msg.levelIndex as number) ?? 0);
+        this.onGameStart?.(
+          msg.seed as number,
+          msg.playerId as number,
+          (msg.playerCount as number) ?? 2,
+          (msg.levelIndex as number) ?? 0,
+        );
         break;
       case 'tick_inputs':
         this.onTickInputs?.(msg.tick as number, msg.inputs as number[]);
@@ -91,8 +96,8 @@ export class NetworkClient {
     }
   }
 
-  createRoom(levelIndex: number = 0): void {
-    this.send({ type: 'create_room', levelIndex });
+  createRoom(levelIndex: number = 0, maxPlayers: number = 2): void {
+    this.send({ type: 'create_room', levelIndex, maxPlayers });
   }
 
   joinRoom(code: string): void {
