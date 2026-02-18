@@ -1,0 +1,132 @@
+{
+  "id": "level1",
+  "name": "Sky Assault",
+  "duration": 7200,
+  "scrollSpeed": 1,
+  "background": {
+    "layers": [
+      { "color": "#0a0a2e", "speed": 0.2, "stars": 40 },
+      { "color": "#1a1a4e", "speed": 0.5, "stars": 20 },
+      { "color": "#2a2a6e", "speed": 1.0, "stars": 10 }
+    ]
+  },
+  "waves": [
+    {
+      "trigger": { "type": "time", "value": 120 },
+      "enemies": [
+        { "type": "small", "count": 5, "formation": "line", "spawnX": 0.5, "delay": 15 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 360 },
+      "enemies": [
+        { "type": "small", "count": 4, "formation": "v", "spawnX": 0.3 },
+        { "type": "small", "count": 4, "formation": "v", "spawnX": 0.7 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 600 },
+      "enemies": [
+        { "type": "medium", "count": 3, "formation": "line", "spawnX": 0.5, "delay": 30 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 900 },
+      "enemies": [
+        { "type": "fast", "count": 8, "formation": "random", "spawnX": 0.5, "delay": 10 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 1200 },
+      "enemies": [
+        { "type": "small", "count": 6, "formation": "circle", "spawnX": 0.5 },
+        { "type": "medium", "count": 2, "formation": "line", "spawnX": 0.5 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 1500 },
+      "enemies": [
+        { "type": "elite", "count": 1, "formation": "line", "spawnX": 0.5 },
+        { "type": "small", "count": 4, "formation": "v", "spawnX": 0.5, "delay": 20 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 1800 },
+      "enemies": [
+        { "type": "fast", "count": 6, "formation": "line", "spawnX": 0.3, "delay": 8 },
+        { "type": "fast", "count": 6, "formation": "line", "spawnX": 0.7, "delay": 8 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 2100 },
+      "enemies": [
+        { "type": "medium", "count": 4, "formation": "v", "spawnX": 0.5, "delay": 20 },
+        { "type": "small", "count": 8, "formation": "random", "spawnX": 0.5, "delay": 12 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 2400 },
+      "enemies": [
+        { "type": "tank", "count": 1, "formation": "line", "spawnX": 0.5 },
+        { "type": "small", "count": 6, "formation": "circle", "spawnX": 0.5 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 2700 },
+      "enemies": [
+        { "type": "elite", "count": 2, "formation": "line", "spawnX": 0.35 },
+        { "type": "elite", "count": 2, "formation": "line", "spawnX": 0.65 },
+        { "type": "medium", "count": 3, "formation": "v", "spawnX": 0.5, "delay": 15 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 3000 },
+      "enemies": [
+        { "type": "tank", "count": 2, "formation": "line", "spawnX": 0.35, "delay": 60 },
+        { "type": "fast", "count": 10, "formation": "random", "spawnX": 0.5, "delay": 8 }
+      ]
+    }
+  ],
+  "boss": {
+    "id": "boss1",
+    "name": "Sky Fortress",
+    "phases": [
+      {
+        "hp": 50,
+        "speed": 1.5,
+        "radius": 40,
+        "color": "#cc2222",
+        "width": 80,
+        "height": 60,
+        "ai": "boss_sweep",
+        "bulletPatterns": ["boss_radial"],
+        "fireRate": 90
+      },
+      {
+        "hp": 80,
+        "speed": 2,
+        "radius": 40,
+        "color": "#cc4422",
+        "width": 80,
+        "height": 60,
+        "ai": "boss_sweep",
+        "bulletPatterns": ["boss_radial", "boss_aimed_burst"],
+        "fireRate": 60
+      },
+      {
+        "hp": 100,
+        "speed": 2.5,
+        "radius": 40,
+        "color": "#ff4444",
+        "width": 80,
+        "height": 60,
+        "ai": "boss_sweep",
+        "bulletPatterns": ["spiral", "boss_aimed_burst"],
+        "fireRate": 45,
+        "minions": [
+          { "type": "small", "count": 4, "formation": "circle", "spawnX": 0.5 }
+        ]
+      }
+    ]
+  }
+}
