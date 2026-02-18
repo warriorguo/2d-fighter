@@ -9,6 +9,7 @@ export function drawResults(
   victory: boolean,
   scores: number[],
   tick: number,
+  levelName?: string,
 ): void {
   // Dim background
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -17,15 +18,22 @@ export function drawResults(
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
+  // Level name
+  if (levelName) {
+    ctx.font = '14px monospace';
+    ctx.fillStyle = '#6688aa';
+    ctx.fillText(levelName, GAME_WIDTH / 2, 170);
+  }
+
   // Title
   ctx.font = 'bold 32px monospace';
   if (victory) {
     const hue = (tick * 2) % 360;
     ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
-    ctx.fillText('VICTORY!', GAME_WIDTH / 2, 200);
+    ctx.fillText('VICTORY!', GAME_WIDTH / 2, 210);
   } else {
     ctx.fillStyle = '#ff4444';
-    ctx.fillText('GAME OVER', GAME_WIDTH / 2, 200);
+    ctx.fillText('GAME OVER', GAME_WIDTH / 2, 210);
   }
 
   // Scores
@@ -35,7 +43,7 @@ export function drawResults(
     ctx.fillText(
       `Player ${i + 1}: ${scores[i].toLocaleString()}`,
       GAME_WIDTH / 2,
-      280 + i * 30,
+      290 + i * 30,
     );
   }
 
@@ -44,7 +52,7 @@ export function drawResults(
     const total = scores.reduce((a, b) => a + b, 0);
     ctx.font = 'bold 18px monospace';
     ctx.fillStyle = '#ffff00';
-    ctx.fillText(`Total: ${total.toLocaleString()}`, GAME_WIDTH / 2, 280 + scores.length * 30 + 20);
+    ctx.fillText(`Total: ${total.toLocaleString()}`, GAME_WIDTH / 2, 290 + scores.length * 30 + 20);
   }
 
   // Prompt

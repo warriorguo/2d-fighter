@@ -4,7 +4,12 @@
 
 import { GAME_WIDTH, GAME_HEIGHT } from 'shared/constants.js';
 
-const MENU_OPTIONS = ['Start Game', 'Co-op (LAN)', 'Controls'];
+const MENU_OPTIONS = [
+  'Level 1 — Sky Assault',
+  'Level 2 — Deep Space',
+  'Co-op (LAN)',
+  'Controls',
+];
 
 export function drawMenu(ctx: CanvasRenderingContext2D, selection: number, tick: number): void {
   // Background
@@ -29,15 +34,15 @@ export function drawMenu(ctx: CanvasRenderingContext2D, selection: number, tick:
   const glow = Math.sin(tick * 0.05) * 0.3 + 0.7;
   ctx.font = 'bold 36px monospace';
   ctx.fillStyle = `rgba(0, 200, 255, ${glow})`;
-  ctx.fillText('SKY ASSAULT', GAME_WIDTH / 2, 180);
+  ctx.fillText('SKY ASSAULT', GAME_WIDTH / 2, 160);
 
   ctx.font = '14px monospace';
   ctx.fillStyle = '#6688aa';
-  ctx.fillText('2D SCROLLING SHOOTER', GAME_WIDTH / 2, 220);
+  ctx.fillText('2D SCROLLING SHOOTER', GAME_WIDTH / 2, 200);
 
   // Menu options
   for (let i = 0; i < MENU_OPTIONS.length; i++) {
-    const y = 340 + i * 50;
+    const y = 320 + i * 45;
     const selected = i === selection;
     ctx.font = selected ? 'bold 18px monospace' : '16px monospace';
     ctx.fillStyle = selected ? '#00ccff' : '#8899aa';
@@ -51,7 +56,7 @@ export function drawMenu(ctx: CanvasRenderingContext2D, selection: number, tick:
     }
   }
 
-  // Controls hint
+  // Difficulty hint
   ctx.font = '11px monospace';
   ctx.fillStyle = '#445566';
   ctx.fillText('Arrow keys to select, Enter to confirm', GAME_WIDTH / 2, GAME_HEIGHT - 40);

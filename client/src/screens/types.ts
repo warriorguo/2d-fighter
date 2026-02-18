@@ -10,6 +10,7 @@ export interface ScreenState {
   results: {
     victory: boolean;
     scores: number[];
+    levelName?: string;
   } | null;
 }
 

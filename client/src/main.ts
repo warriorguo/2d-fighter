@@ -34,6 +34,10 @@ import { LockstepManager } from './net/lockstep.js';
 import { DebugOverlay } from './debug-overlay.js';
 
 import level1Data from '../../data/levels/level1.json';
+import level2Data from '../../data/levels/level2.json';
+
+const LEVELS: LevelConfig[] = [level1Data as LevelConfig, level2Data as LevelConfig];
+let selectedLevel = 0;
 
 // Game state
 let sim: GameSimulation | null = null;
@@ -115,15 +119,21 @@ function handleMenuKey(e: KeyboardEvent): void {
     case 'Enter':
     case 'Space':
       switch (screenState.menuSelection) {
-        case 0: // Start Game (single player)
+        case 0: // Level 1
           isCoopMode = false;
+          selectedLevel = 0;
           startGame(1);
           break;
-        case 1: // Co-op
+        case 1: // Level 2
+          isCoopMode = false;
+          selectedLevel = 1;
+          startGame(1);
+          break;
+        case 2: // Co-op
           screenState.current = 'lobby';
           lobbyState = createLobbyState();
           break;
-        case 2: // Controls
+        case 3: // Controls
           screenState.current = 'controls' as Screen;
           break;
       }
@@ -260,7 +270,7 @@ function connectAndJoinRoom(code: string): void {
 }
 
 function startGame(playerCount: number, seed?: number): void {
-  const level = level1Data as LevelConfig;
+  const level = LEVELS[selectedLevel];
   const gameSeed = seed ?? (Date.now() & 0xFFFFFFFF);
 
   sim = new GameSimulation({
@@ -335,7 +345,7 @@ function loop(now: number): void {
 
     case 'results':
       renderGame();
-      drawResults(ctx, screenState.results?.victory ?? false, screenState.results?.scores ?? [0], menuTick);
+      drawResults(ctx, screenState.results?.victory ?? false, screenState.results?.scores ?? [0], menuTick, screenState.results?.levelName);
       break;
 
     default:
@@ -385,13 +395,15 @@ function updateGame(dt: number): void {
 function checkGameState(): void {
   if (!sim || !waveState || !bossState) return;
 
+  const levelName = LEVELS[selectedLevel].name;
+
   // Victory
   if (waveState.levelComplete) {
     const scores: number[] = [];
     for (const [, tag] of sim.world.playerTag) {
       scores.push(tag.score);
     }
-    screenState.results = { victory: true, scores };
+    screenState.results = { victory: true, scores, levelName };
     screenState.current = 'results';
     return;
   }
@@ -406,7 +418,7 @@ function checkGameState(): void {
   }
 
   if (allDead) {
-    screenState.results = { victory: false, scores };
+    screenState.results = { victory: false, scores, levelName };
     screenState.current = 'results';
   }
 }
