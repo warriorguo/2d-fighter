@@ -70,12 +70,13 @@ wss.on('connection', (ws: WebSocket) => {
 
     switch (msg.type) {
       case 'create_room': {
-        const room = createRoom(ws);
+        const levelIdx = typeof msg.levelIndex === 'number' ? (msg.levelIndex | 0) : 0;
+        const room = createRoom(ws, levelIdx);
         ws.send(JSON.stringify({
           type: 'room_created',
           code: room.code,
         }));
-        console.log(`Room created: ${room.code}`);
+        console.log(`Room created: ${room.code} (level ${levelIdx})`);
         break;
       }
 
@@ -109,6 +110,7 @@ wss.on('connection', (ws: WebSocket) => {
               type: 'game_start',
               seed: room.seed,
               playerId,
+              levelIndex: room.levelIndex,
             }));
           }
         }

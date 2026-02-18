@@ -24,7 +24,7 @@ export class NetworkClient {
   // Callbacks
   onRoomCreated: ((code: string) => void) | null = null;
   onPlayerJoined: ((count: number) => void) | null = null;
-  onGameStart: ((seed: number, playerId: number) => void) | null = null;
+  onGameStart: ((seed: number, playerId: number, levelIndex: number) => void) | null = null;
   onTickInputs: ((tick: number, inputs: number[]) => void) | null = null;
   onError: ((msg: string) => void) | null = null;
 
@@ -74,7 +74,7 @@ export class NetworkClient {
         this.onPlayerJoined?.(msg.count as number);
         break;
       case 'game_start':
-        this.onGameStart?.(msg.seed as number, msg.playerId as number);
+        this.onGameStart?.(msg.seed as number, msg.playerId as number, (msg.levelIndex as number) ?? 0);
         break;
       case 'tick_inputs':
         this.onTickInputs?.(msg.tick as number, msg.inputs as number[]);
@@ -91,8 +91,8 @@ export class NetworkClient {
     }
   }
 
-  createRoom(): void {
-    this.send({ type: 'create_room' });
+  createRoom(levelIndex: number = 0): void {
+    this.send({ type: 'create_room', levelIndex });
   }
 
   joinRoom(code: string): void {

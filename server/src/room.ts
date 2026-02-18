@@ -12,6 +12,7 @@ export interface Room {
   players: WebSocket[];
   playerIds: Map<WebSocket, number>;
   seed: number;
+  levelIndex: number;
   tickInputs: Map<number, Map<number, number>>; // tick → (playerId → inputBits)
 }
 
@@ -27,7 +28,7 @@ function generateCode(): string {
   return code;
 }
 
-export function createRoom(ws: WebSocket): Room {
+export function createRoom(ws: WebSocket, levelIndex: number = 0): Room {
   let code = generateCode();
   while (rooms.has(code)) {
     code = generateCode();
@@ -39,6 +40,7 @@ export function createRoom(ws: WebSocket): Room {
     players: [ws],
     playerIds: new Map([[ws, 0]]),
     seed: (Math.random() * 0xFFFFFFFF) | 0,
+    levelIndex,
     tickInputs: new Map(),
   };
 

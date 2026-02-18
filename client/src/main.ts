@@ -28,7 +28,7 @@ import { drawMenu, getMenuOptionCount } from './screens/menu.js';
 import { drawResults } from './screens/results.js';
 import { drawPause, getPauseOptionCount } from './screens/pause.js';
 import { drawControls } from './screens/controls.js';
-import { createLobbyState, drawLobby, type LobbyState } from './screens/lobby.js';
+import { createLobbyState, drawLobby, getLobbyLevelCount, type LobbyState } from './screens/lobby.js';
 import { NetworkClient } from './net/client.js';
 import { LockstepManager } from './net/lockstep.js';
 import { DebugOverlay } from './debug-overlay.js';
@@ -162,7 +162,13 @@ function handleLobbyKey(e: KeyboardEvent): void {
   }
 
   if (lobbyState.mode === 'none') {
-    if (e.code === 'KeyC') {
+    const levelCount = getLobbyLevelCount();
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+      lobbyState.levelSelection = (lobbyState.levelSelection - 1 + levelCount) % levelCount;
+    } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+      lobbyState.levelSelection = (lobbyState.levelSelection + 1) % levelCount;
+    } else if (e.code === 'KeyC') {
+      selectedLevel = lobbyState.levelSelection;
       lobbyState.mode = 'creating';
       connectAndCreateRoom();
     } else if (e.code === 'KeyJ') {
@@ -244,15 +250,16 @@ function connectAndCreateRoom(): void {
   };
   // Both creator and joiner start from the server's game_start message
   // so they share the same seed and get correct playerIds
-  networkClient.onGameStart = (seed, playerId) => {
+  networkClient.onGameStart = (seed, playerId, levelIndex) => {
     isCoopMode = true;
+    selectedLevel = levelIndex;
     startCoopGame(seed, playerId);
   };
   networkClient.onError = (msg) => {
     lobbyState.error = msg;
   };
   networkClient.connect().then(() => {
-    networkClient!.createRoom();
+    networkClient!.createRoom(selectedLevel);
   }).catch(() => {
     lobbyState.error = 'Failed to connect to server';
   });
@@ -260,8 +267,9 @@ function connectAndCreateRoom(): void {
 
 function connectAndJoinRoom(code: string): void {
   networkClient = new NetworkClient();
-  networkClient.onGameStart = (seed, playerId) => {
+  networkClient.onGameStart = (seed, playerId, levelIndex) => {
     isCoopMode = true;
+    selectedLevel = levelIndex;
     startCoopGame(seed, playerId);
   };
   networkClient.onError = (msg) => {
