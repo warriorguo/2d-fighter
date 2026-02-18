@@ -44,3 +44,8 @@ Input → Movement → EnemyAI → Shooting → BulletPattern → Collision → 
 
 - Client imports from shared using `'shared/...'` path alias (resolved by Vite + tsconfig paths)
 - Shared package uses `.js` extensions in imports (ESM)
+
+### Deployment
+
+- Docker: `docker compose up --build` (nginx on :80 + node on :8080)
+- CI/CD: Tekton pipeline builds image, deploys to K8s with ingress at `2d-fighter.local.playquota.com`
