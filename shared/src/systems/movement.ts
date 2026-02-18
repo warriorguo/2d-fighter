@@ -19,6 +19,14 @@ export function createMovementSystem(sim: GameSimulation) {
       const vel = world.velocity.get(entity);
       if (!vel) continue;
 
+      // Dead players don't move
+      const hp = world.health.get(entity);
+      if (hp && hp.current <= 0) {
+        vel.vx = 0;
+        vel.vy = 0;
+        continue;
+      }
+
       const input: PlayerInput = sim.inputs[tag.playerId] || sim.inputs[0];
       const speed = input.slow ? PLAYER_SLOW_SPEED : PLAYER_SPEED;
 

@@ -14,6 +14,10 @@ export function createShootingSystem(sim: GameSimulation) {
       const tag = world.playerTag.get(entity);
       if (!tag) continue;
 
+      // Dead players don't shoot
+      const hp = world.health.get(entity);
+      if (hp && hp.current <= 0) continue;
+
       const pos = world.position.get(entity);
       if (!pos) continue;
 

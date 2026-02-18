@@ -52,8 +52,11 @@ export class Renderer {
 
       this.ctx.fillStyle = sprite.color;
 
-      // Invulnerability flash for players
+      // Dead players are not rendered
       const hp = world.health.get(entity);
+      if (hp && hp.current <= 0 && world.playerTag.has(entity)) continue;
+
+      // Invulnerability flash for players
       if (hp && hp.invulnTicks > 0 && world.playerTag.has(entity)) {
         if ((hp.invulnTicks >> 2) & 1) continue; // blink
       }
