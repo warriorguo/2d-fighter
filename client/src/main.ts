@@ -27,6 +27,7 @@ import { createScreenState, type Screen } from './screens/types.js';
 import { drawMenu, getMenuOptionCount } from './screens/menu.js';
 import { drawResults } from './screens/results.js';
 import { drawPause, getPauseOptionCount } from './screens/pause.js';
+import { drawStageClear, STAGE_CLEAR_DURATION } from './screens/stageclear.js';
 import { drawControls } from './screens/controls.js';
 import { createLobbyState, drawLobby, type LobbyState } from './screens/lobby.js';
 import { NetworkClient } from './net/client.js';
@@ -386,6 +387,19 @@ function loop(now: number): void {
       drawPause(ctx, pauseSelection, menuTick);
       break;
 
+    case 'stageClear':
+      renderGame();
+      if (screenState.stageClear) {
+        drawStageClear(ctx, screenState.stageClear, menuTick);
+        if (performance.now() - screenState.stageClear.startTime >= STAGE_CLEAR_DURATION) {
+          const { playerCount, savedScores } = screenState.stageClear;
+          screenState.stageClear = null;
+          selectedLevel++;
+          startGame(playerCount, undefined, savedScores);
+        }
+      }
+      break;
+
     case 'results':
       renderGame();
       drawResults(ctx, screenState.results?.victory ?? false, screenState.results?.scores ?? [0], menuTick, screenState.results?.levelName);
@@ -447,10 +461,16 @@ function checkGameState(): void {
       scores.push(tag.score);
     }
     if (selectedLevel < LEVELS.length - 1) {
-      // Advance to next level, carry scores
-      const pc = sim.config.playerCount;
-      selectedLevel++;
-      startGame(pc, undefined, scores);
+      // Show stage clear transition before advancing
+      screenState.stageClear = {
+        clearedName: levelName,
+        nextName: LEVELS[selectedLevel + 1].name,
+        scores: [...scores],
+        playerCount: sim.config.playerCount,
+        savedScores: [...scores],
+        startTime: performance.now(),
+      };
+      screenState.current = 'stageClear';
       return;
     }
     // Final level cleared — campaign victory
