@@ -28,7 +28,7 @@ import { drawMenu, getMenuOptionCount } from './screens/menu.js';
 import { drawResults } from './screens/results.js';
 import { drawPause, getPauseOptionCount } from './screens/pause.js';
 import { drawControls } from './screens/controls.js';
-import { createLobbyState, drawLobby, getLobbyLevelCount, type LobbyState } from './screens/lobby.js';
+import { createLobbyState, drawLobby, type LobbyState } from './screens/lobby.js';
 import { NetworkClient } from './net/client.js';
 import { LockstepManager } from './net/lockstep.js';
 import { DebugOverlay } from './debug-overlay.js';
@@ -47,6 +47,7 @@ const LEVELS: LevelConfig[] = [
   level5Data as LevelConfig,
 ];
 let selectedLevel = 0;
+let gameSeed = 0;
 
 // Game state
 let sim: GameSimulation | null = null;
@@ -128,16 +129,16 @@ function handleMenuKey(e: KeyboardEvent): void {
     case 'Enter':
     case 'Space': {
       const sel = screenState.menuSelection;
-      if (sel < LEVELS.length) {
-        // Level selection
+      if (sel === 0) {
+        // Start Game — always from Level 1
         isCoopMode = false;
-        selectedLevel = sel;
+        selectedLevel = 0;
         startGame(1);
-      } else if (sel === LEVELS.length) {
+      } else if (sel === 1) {
         // Co-op
         screenState.current = 'lobby';
         lobbyState = createLobbyState();
-      } else if (sel === LEVELS.length + 1) {
+      } else if (sel === 2) {
         // Controls
         screenState.current = 'controls' as Screen;
       }
@@ -176,18 +177,12 @@ function handleLobbyKey(e: KeyboardEvent): void {
       }
     }
   } else if (lobbyState.mode === 'create_setup') {
-    // Level + player count selection before creating
-    const levelCount = getLobbyLevelCount();
-    if (e.code === 'ArrowUp' || e.code === 'KeyW') {
-      lobbyState.levelSelection = (lobbyState.levelSelection - 1 + levelCount) % levelCount;
-    } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
-      lobbyState.levelSelection = (lobbyState.levelSelection + 1) % levelCount;
-    } else if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+    // Player count selection before creating
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
       lobbyState.maxPlayers = Math.max(2, lobbyState.maxPlayers - 1);
     } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
       lobbyState.maxPlayers = Math.min(MAX_PLAYERS, lobbyState.maxPlayers + 1);
     } else if (e.code === 'Enter' || e.code === 'Space') {
-      selectedLevel = lobbyState.levelSelection;
       lobbyState.mode = 'creating';
       connectAndCreateRoom();
     }
@@ -237,10 +232,11 @@ function handlePauseKey(e: KeyboardEvent): void {
         case 0: // Resume
           resumeGame();
           break;
-        case 1: // Restart
+        case 1: // Restart (from Level 1)
           paused = false;
+          selectedLevel = 0;
           if (sim) {
-            startGame(sim.config.playerCount, undefined);
+            startGame(sim.config.playerCount);
           }
           break;
         case 2: // Quit to Menu
@@ -268,16 +264,16 @@ function connectAndCreateRoom(): void {
   };
   // Both creator and joiner start from the server's game_start message
   // so they share the same seed and get correct playerIds
-  networkClient.onGameStart = (seed, playerId, playerCount, levelIndex) => {
+  networkClient.onGameStart = (seed, playerId, playerCount, _levelIndex) => {
     isCoopMode = true;
-    selectedLevel = levelIndex;
+    selectedLevel = 0;
     startCoopGame(seed, playerId, playerCount);
   };
   networkClient.onError = (msg) => {
     lobbyState.error = msg;
   };
   networkClient.connect().then(() => {
-    networkClient!.createRoom(selectedLevel, lobbyState.maxPlayers);
+    networkClient!.createRoom(0, lobbyState.maxPlayers);
   }).catch(() => {
     lobbyState.error = 'Failed to connect to server';
   });
@@ -285,9 +281,9 @@ function connectAndCreateRoom(): void {
 
 function connectAndJoinRoom(code: string): void {
   networkClient = new NetworkClient();
-  networkClient.onGameStart = (seed, playerId, playerCount, levelIndex) => {
+  networkClient.onGameStart = (seed, playerId, playerCount, _levelIndex) => {
     isCoopMode = true;
-    selectedLevel = levelIndex;
+    selectedLevel = 0;
     startCoopGame(seed, playerId, playerCount);
   };
   networkClient.onError = (msg) => {
@@ -300,19 +296,35 @@ function connectAndJoinRoom(code: string): void {
   });
 }
 
-function startGame(playerCount: number, seed?: number): void {
+function startGame(playerCount: number, seed?: number, savedScores?: number[]): void {
   const level = LEVELS[selectedLevel];
-  const gameSeed = seed ?? (Date.now() & 0xFFFFFFFF);
+  if (seed !== undefined) {
+    gameSeed = seed;
+  } else if (!savedScores) {
+    // Fresh campaign start — generate new seed
+    gameSeed = Date.now() & 0xFFFFFFFF;
+  }
+  // Level advancement reuses existing gameSeed
+  const levelSeed = (gameSeed + selectedLevel) | 0;
 
   sim = new GameSimulation({
-    seed: gameSeed,
+    seed: levelSeed,
     playerCount,
     levelId: level.id,
   });
 
-  // Create players
+  // Create players and restore carried-over scores
   for (let i = 0; i < playerCount; i++) {
     createPlayer(sim.world, i, playerCount);
+  }
+  if (savedScores) {
+    let idx = 0;
+    for (const [, tag] of sim.world.playerTag) {
+      if (idx < savedScores.length) {
+        tag.score = savedScores[idx];
+      }
+      idx++;
+    }
   }
 
   // Init states
@@ -428,13 +440,21 @@ function checkGameState(): void {
 
   const levelName = LEVELS[selectedLevel].name;
 
-  // Victory
+  // Level complete — advance or final victory
   if (waveState.levelComplete) {
     const scores: number[] = [];
     for (const [, tag] of sim.world.playerTag) {
       scores.push(tag.score);
     }
-    screenState.results = { victory: true, scores, levelName };
+    if (selectedLevel < LEVELS.length - 1) {
+      // Advance to next level, carry scores
+      const pc = sim.config.playerCount;
+      selectedLevel++;
+      startGame(pc, undefined, scores);
+      return;
+    }
+    // Final level cleared — campaign victory
+    screenState.results = { victory: true, scores, levelName: 'All Stages Complete' };
     screenState.current = 'results';
     return;
   }
