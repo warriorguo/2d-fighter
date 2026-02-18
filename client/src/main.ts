@@ -35,8 +35,17 @@ import { DebugOverlay } from './debug-overlay.js';
 
 import level1Data from '../../data/levels/level1.json';
 import level2Data from '../../data/levels/level2.json';
+import level3Data from '../../data/levels/level3.json';
+import level4Data from '../../data/levels/level4.json';
+import level5Data from '../../data/levels/level5.json';
 
-const LEVELS: LevelConfig[] = [level1Data as LevelConfig, level2Data as LevelConfig];
+const LEVELS: LevelConfig[] = [
+  level1Data as LevelConfig,
+  level2Data as LevelConfig,
+  level3Data as LevelConfig,
+  level4Data as LevelConfig,
+  level5Data as LevelConfig,
+];
 let selectedLevel = 0;
 
 // Game state
@@ -117,27 +126,23 @@ function handleMenuKey(e: KeyboardEvent): void {
       screenState.menuSelection = (screenState.menuSelection + 1) % optionCount;
       break;
     case 'Enter':
-    case 'Space':
-      switch (screenState.menuSelection) {
-        case 0: // Level 1
-          isCoopMode = false;
-          selectedLevel = 0;
-          startGame(1);
-          break;
-        case 1: // Level 2
-          isCoopMode = false;
-          selectedLevel = 1;
-          startGame(1);
-          break;
-        case 2: // Co-op
-          screenState.current = 'lobby';
-          lobbyState = createLobbyState();
-          break;
-        case 3: // Controls
-          screenState.current = 'controls' as Screen;
-          break;
+    case 'Space': {
+      const sel = screenState.menuSelection;
+      if (sel < LEVELS.length) {
+        // Level selection
+        isCoopMode = false;
+        selectedLevel = sel;
+        startGame(1);
+      } else if (sel === LEVELS.length) {
+        // Co-op
+        screenState.current = 'lobby';
+        lobbyState = createLobbyState();
+      } else if (sel === LEVELS.length + 1) {
+        // Controls
+        screenState.current = 'controls' as Screen;
       }
       break;
+    }
   }
 }
 

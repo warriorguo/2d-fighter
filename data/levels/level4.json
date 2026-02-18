@@ -1,0 +1,250 @@
+{
+  "id": "level4",
+  "name": "Event Horizon",
+  "duration": 18000,
+  "scrollSpeed": 1.6,
+  "background": {
+    "layers": [
+      { "color": "#000a12", "speed": 0.2, "stars": 60 },
+      { "color": "#001a2a", "speed": 0.5, "stars": 35 },
+      { "color": "#002a3a", "speed": 1.0, "stars": 20 }
+    ]
+  },
+  "waves": [
+    {
+      "trigger": { "type": "time", "value": 60 },
+      "enemies": [
+        { "type": "fast", "count": 10, "formation": "v", "spawnX": 0.5, "delay": 5 },
+        { "type": "small", "count": 8, "formation": "line", "spawnX": 0.3, "delay": 8 },
+        { "type": "small", "count": 8, "formation": "line", "spawnX": 0.7, "delay": 8 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 300 },
+      "enemies": [
+        { "type": "medium", "count": 6, "formation": "v", "spawnX": 0.5, "delay": 12 },
+        { "type": "fast", "count": 10, "formation": "random", "spawnX": 0.3, "delay": 4 },
+        { "type": "fast", "count": 10, "formation": "random", "spawnX": 0.7, "delay": 4 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 540 },
+      "enemies": [
+        { "type": "elite", "count": 3, "formation": "line", "spawnX": 0.25 },
+        { "type": "elite", "count": 3, "formation": "line", "spawnX": 0.75 },
+        { "type": "medium", "count": 6, "formation": "circle", "spawnX": 0.5 },
+        { "type": "small", "count": 10, "formation": "random", "spawnX": 0.5, "delay": 5 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 780 },
+      "enemies": [
+        { "type": "tank", "count": 2, "formation": "line", "spawnX": 0.3 },
+        { "type": "tank", "count": 2, "formation": "line", "spawnX": 0.7 },
+        { "type": "elite", "count": 4, "formation": "v", "spawnX": 0.5, "delay": 20 },
+        { "type": "fast", "count": 12, "formation": "random", "spawnX": 0.5, "delay": 3 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 1020 },
+      "enemies": [
+        { "type": "fast", "count": 14, "formation": "random", "spawnX": 0.5, "delay": 3 },
+        { "type": "elite", "count": 4, "formation": "circle", "spawnX": 0.5 },
+        { "type": "medium", "count": 6, "formation": "line", "spawnX": 0.5, "delay": 10 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 1260 },
+      "enemies": [
+        { "type": "tank", "count": 3, "formation": "line", "spawnX": 0.5, "delay": 30 },
+        { "type": "elite", "count": 4, "formation": "v", "spawnX": 0.3, "delay": 18 },
+        { "type": "elite", "count": 4, "formation": "v", "spawnX": 0.7, "delay": 18 },
+        { "type": "small", "count": 12, "formation": "random", "spawnX": 0.5, "delay": 4 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 1500 },
+      "enemies": [
+        { "type": "medium", "count": 8, "formation": "circle", "spawnX": 0.5 },
+        { "type": "fast", "count": 16, "formation": "random", "spawnX": 0.5, "delay": 3 },
+        { "type": "tank", "count": 2, "formation": "line", "spawnX": 0.2 },
+        { "type": "tank", "count": 2, "formation": "line", "spawnX": 0.8 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 1740 },
+      "enemies": [
+        { "type": "elite", "count": 5, "formation": "circle", "spawnX": 0.5 },
+        { "type": "tank", "count": 3, "formation": "v", "spawnX": 0.5, "delay": 25 },
+        { "type": "medium", "count": 8, "formation": "random", "spawnX": 0.5, "delay": 8 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 1980 },
+      "enemies": [
+        { "type": "fast", "count": 18, "formation": "random", "spawnX": 0.5, "delay": 2 },
+        { "type": "elite", "count": 5, "formation": "v", "spawnX": 0.5, "delay": 15 },
+        { "type": "small", "count": 14, "formation": "circle", "spawnX": 0.5 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 2220 },
+      "enemies": [
+        { "type": "tank", "count": 4, "formation": "line", "spawnX": 0.5, "delay": 25 },
+        { "type": "elite", "count": 4, "formation": "circle", "spawnX": 0.5 },
+        { "type": "medium", "count": 6, "formation": "v", "spawnX": 0.3, "delay": 10 },
+        { "type": "medium", "count": 6, "formation": "v", "spawnX": 0.7, "delay": 10 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 2520 },
+      "enemies": [
+        { "type": "elite", "count": 6, "formation": "circle", "spawnX": 0.5 },
+        { "type": "fast", "count": 16, "formation": "random", "spawnX": 0.3, "delay": 3 },
+        { "type": "fast", "count": 16, "formation": "random", "spawnX": 0.7, "delay": 3 },
+        { "type": "tank", "count": 2, "formation": "line", "spawnX": 0.5, "delay": 40 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 2820 },
+      "enemies": [
+        { "type": "tank", "count": 3, "formation": "v", "spawnX": 0.5 },
+        { "type": "elite", "count": 5, "formation": "line", "spawnX": 0.5, "delay": 20 },
+        { "type": "medium", "count": 10, "formation": "random", "spawnX": 0.5, "delay": 6 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 3120 },
+      "enemies": [
+        { "type": "tank", "count": 4, "formation": "line", "spawnX": 0.5, "delay": 20 },
+        { "type": "elite", "count": 6, "formation": "circle", "spawnX": 0.5 },
+        { "type": "fast", "count": 18, "formation": "random", "spawnX": 0.5, "delay": 2 },
+        { "type": "small", "count": 16, "formation": "random", "spawnX": 0.5, "delay": 3 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 3480 },
+      "enemies": [
+        { "type": "elite", "count": 6, "formation": "v", "spawnX": 0.5, "delay": 15 },
+        { "type": "tank", "count": 3, "formation": "line", "spawnX": 0.3 },
+        { "type": "tank", "count": 3, "formation": "line", "spawnX": 0.7 },
+        { "type": "medium", "count": 8, "formation": "circle", "spawnX": 0.5 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 3840 },
+      "enemies": [
+        { "type": "fast", "count": 20, "formation": "random", "spawnX": 0.5, "delay": 2 },
+        { "type": "elite", "count": 5, "formation": "circle", "spawnX": 0.3 },
+        { "type": "elite", "count": 5, "formation": "circle", "spawnX": 0.7 },
+        { "type": "tank", "count": 2, "formation": "line", "spawnX": 0.5, "delay": 35 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 4200 },
+      "enemies": [
+        { "type": "tank", "count": 4, "formation": "v", "spawnX": 0.5 },
+        { "type": "elite", "count": 6, "formation": "circle", "spawnX": 0.5 },
+        { "type": "medium", "count": 10, "formation": "random", "spawnX": 0.5, "delay": 6 },
+        { "type": "fast", "count": 14, "formation": "random", "spawnX": 0.5, "delay": 3 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 4500 },
+      "enemies": [
+        { "type": "tank", "count": 5, "formation": "line", "spawnX": 0.5, "delay": 20 },
+        { "type": "elite", "count": 8, "formation": "circle", "spawnX": 0.5 },
+        { "type": "fast", "count": 20, "formation": "random", "spawnX": 0.5, "delay": 2 },
+        { "type": "medium", "count": 8, "formation": "v", "spawnX": 0.5, "delay": 8 }
+      ]
+    },
+    {
+      "trigger": { "type": "time", "value": 4800 },
+      "enemies": [
+        { "type": "tank", "count": 4, "formation": "v", "spawnX": 0.3 },
+        { "type": "tank", "count": 4, "formation": "v", "spawnX": 0.7 },
+        { "type": "elite", "count": 8, "formation": "circle", "spawnX": 0.5 },
+        { "type": "medium", "count": 10, "formation": "random", "spawnX": 0.5, "delay": 5 }
+      ]
+    }
+  ],
+  "boss": {
+    "id": "boss4",
+    "name": "Quantum Hydra",
+    "phases": [
+      {
+        "hp": 180,
+        "speed": 2.5,
+        "radius": 50,
+        "color": "#2288cc",
+        "width": 100,
+        "height": 80,
+        "ai": "boss_sweep",
+        "bulletPatterns": ["boss_radial", "aimed"],
+        "fireRate": 55,
+        "minions": [
+          { "type": "small", "count": 4, "formation": "circle", "spawnX": 0.5 }
+        ]
+      },
+      {
+        "hp": 220,
+        "speed": 3,
+        "radius": 50,
+        "color": "#22aadd",
+        "width": 100,
+        "height": 80,
+        "ai": "boss_sweep",
+        "bulletPatterns": ["spiral", "boss_aimed_burst"],
+        "fireRate": 45,
+        "minions": [
+          { "type": "medium", "count": 3, "formation": "line", "spawnX": 0.5 }
+        ]
+      },
+      {
+        "hp": 250,
+        "speed": 3.5,
+        "radius": 50,
+        "color": "#22ccee",
+        "width": 100,
+        "height": 80,
+        "ai": "boss_sweep",
+        "bulletPatterns": ["boss_radial", "spiral", "spread"],
+        "fireRate": 35,
+        "minions": [
+          { "type": "medium", "count": 4, "formation": "circle", "spawnX": 0.5 },
+          { "type": "fast", "count": 6, "formation": "random", "spawnX": 0.5, "delay": 5 }
+        ]
+      },
+      {
+        "hp": 270,
+        "speed": 4,
+        "radius": 50,
+        "color": "#44ddff",
+        "width": 100,
+        "height": 80,
+        "ai": "boss_sweep",
+        "bulletPatterns": ["spiral", "boss_radial", "boss_aimed_burst"],
+        "fireRate": 28,
+        "minions": [
+          { "type": "elite", "count": 3, "formation": "line", "spawnX": 0.3 },
+          { "type": "elite", "count": 3, "formation": "line", "spawnX": 0.7 }
+        ]
+      },
+      {
+        "hp": 280,
+        "speed": 4.5,
+        "radius": 50,
+        "color": "#88eeff",
+        "width": 100,
+        "height": 80,
+        "ai": "boss_sweep",
+        "bulletPatterns": ["spiral", "boss_radial", "boss_aimed_burst", "spread"],
+        "fireRate": 20,
+        "minions": [
+          { "type": "elite", "count": 4, "formation": "circle", "spawnX": 0.5 },
+          { "type": "medium", "count": 4, "formation": "line", "spawnX": 0.5 }
+        ]
+      }
+    ]
+  }
+}
