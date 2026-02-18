@@ -162,6 +162,21 @@ function handleLobbyKey(e: KeyboardEvent): void {
   }
 
   if (lobbyState.mode === 'none') {
+    // Create / Join selection
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+      lobbyState.menuSelection = (lobbyState.menuSelection + 1) % 2;
+    } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+      lobbyState.menuSelection = (lobbyState.menuSelection + 1) % 2;
+    } else if (e.code === 'Enter' || e.code === 'Space') {
+      if (lobbyState.menuSelection === 0) {
+        lobbyState.mode = 'create_setup';
+      } else {
+        lobbyState.mode = 'joining';
+        lobbyState.inputCode = '';
+      }
+    }
+  } else if (lobbyState.mode === 'create_setup') {
+    // Level + player count selection before creating
     const levelCount = getLobbyLevelCount();
     if (e.code === 'ArrowUp' || e.code === 'KeyW') {
       lobbyState.levelSelection = (lobbyState.levelSelection - 1 + levelCount) % levelCount;
@@ -171,13 +186,10 @@ function handleLobbyKey(e: KeyboardEvent): void {
       lobbyState.maxPlayers = Math.max(2, lobbyState.maxPlayers - 1);
     } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
       lobbyState.maxPlayers = Math.min(MAX_PLAYERS, lobbyState.maxPlayers + 1);
-    } else if (e.code === 'KeyC') {
+    } else if (e.code === 'Enter' || e.code === 'Space') {
       selectedLevel = lobbyState.levelSelection;
       lobbyState.mode = 'creating';
       connectAndCreateRoom();
-    } else if (e.code === 'KeyJ') {
-      lobbyState.mode = 'joining';
-      lobbyState.inputCode = '';
     }
   } else if (lobbyState.mode === 'joining') {
     if (e.code === 'Enter' && lobbyState.inputCode.length > 0) {

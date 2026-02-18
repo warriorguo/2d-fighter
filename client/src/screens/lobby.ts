@@ -20,8 +20,9 @@ export interface LobbyState {
   connected: boolean;
   playerCount: number;
   maxPlayers: number;
-  mode: 'none' | 'creating' | 'joining' | 'waiting';
+  mode: 'none' | 'create_setup' | 'creating' | 'joining' | 'waiting';
   error: string;
+  menuSelection: number; // 0 = Create, 1 = Join
   levelSelection: number;
 }
 
@@ -34,6 +35,7 @@ export function createLobbyState(): LobbyState {
     maxPlayers: 2,
     mode: 'none',
     error: '',
+    menuSelection: 0,
     levelSelection: 0,
   };
 }
@@ -54,6 +56,24 @@ export function drawLobby(ctx: CanvasRenderingContext2D, state: LobbyState, tick
   ctx.fillText('CO-OP LOBBY', GAME_WIDTH / 2, 60);
 
   if (state.mode === 'none') {
+    // Simple Create / Join choice
+    const options = ['Create Room', 'Join Room'];
+    for (let i = 0; i < options.length; i++) {
+      const y = 260 + i * 50;
+      const selected = i === state.menuSelection;
+      ctx.font = selected ? 'bold 20px monospace' : '16px monospace';
+      ctx.fillStyle = selected ? '#ffffff' : '#666666';
+      if (selected) {
+        const bounce = Math.sin(tick * 0.1) * 2;
+        ctx.fillText(`> ${options[i]} <`, GAME_WIDTH / 2 + bounce, y);
+      } else {
+        ctx.fillText(options[i], GAME_WIDTH / 2, y);
+      }
+    }
+    ctx.font = '11px monospace';
+    ctx.fillStyle = '#666';
+    ctx.fillText('Up/Down + Enter to select, Esc to go back', GAME_WIDTH / 2, 400);
+  } else if (state.mode === 'create_setup') {
     // Level selection
     ctx.font = '12px monospace';
     ctx.fillStyle = '#888888';
@@ -64,7 +84,6 @@ export function drawLobby(ctx: CanvasRenderingContext2D, state: LobbyState, tick
       const selected = i === state.levelSelection;
       ctx.font = selected ? 'bold 14px monospace' : '12px monospace';
       ctx.fillStyle = selected ? '#ffffff' : LEVEL_COLORS[i];
-
       if (selected) {
         const bounce = Math.sin(tick * 0.1) * 2;
         ctx.fillText(`> ${LEVEL_NAMES[i]} <`, GAME_WIDTH / 2 + bounce, y);
@@ -84,14 +103,13 @@ export function drawLobby(ctx: CanvasRenderingContext2D, state: LobbyState, tick
     ctx.fillStyle = '#666';
     ctx.fillText('Left/Right to change (2-4)', GAME_WIDTH / 2, 352);
 
-    // Actions
+    // Confirm
     ctx.font = '16px monospace';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText('C — Create Room', GAME_WIDTH / 2, 390);
-    ctx.fillText('J — Join Room', GAME_WIDTH / 2, 420);
+    ctx.fillText('Enter — Create Room', GAME_WIDTH / 2, 400);
     ctx.font = '11px monospace';
     ctx.fillStyle = '#666';
-    ctx.fillText('Up/Down: level, Left/Right: players, Esc: back', GAME_WIDTH / 2, 460);
+    ctx.fillText('Up/Down: level, Left/Right: players, Esc: back', GAME_WIDTH / 2, 440);
   } else if (state.mode === 'creating' || state.mode === 'waiting') {
     // Show selected level
     ctx.font = '13px monospace';
@@ -123,7 +141,7 @@ export function drawLobby(ctx: CanvasRenderingContext2D, state: LobbyState, tick
     ctx.fillText('Press Enter to join', GAME_WIDTH / 2, 310);
     ctx.font = '11px monospace';
     ctx.fillStyle = '#666';
-    ctx.fillText('(Level is set by room creator)', GAME_WIDTH / 2, 350);
+    ctx.fillText('Level & players set by room creator', GAME_WIDTH / 2, 350);
   }
 
   if (state.error) {
