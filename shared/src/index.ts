@@ -20,3 +20,4 @@ export * from './systems/drop.js';
 export * from './systems/wave.js';
 export * from './systems/score.js';
 export * from './systems/boss.js';
+export * from './systems/bomb.js';

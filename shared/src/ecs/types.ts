@@ -22,6 +22,7 @@ export interface Health {
   current: number;
   max: number;
   invulnTicks: number; // remaining invulnerability ticks
+  frozenTicks: number; // remaining freeze ticks (movement + AI + shooting paused)
 }
 
 export interface Collider {
@@ -57,6 +58,9 @@ export const enum SpriteType {
   Boss,
   Drop,
   Explosion,
+  Bomb,
+  ExplosivePlayerBullet,
+  IcePlayerBullet,
 }
 
 export interface Weapon {
@@ -85,6 +89,11 @@ export interface PlayerTag {
   bombs: number;
   score: number;
   weaponLevel: number;
+  lastBombPressed: boolean; // for rising-edge detection
+  bulletDamageBonus: number; // shop: extra damage per bullet
+  speedMultiplier: number;   // shop: 1.0 = no boost
+  scoreMultiplier: number;   // shop: multiplies score gains
+  explosiveBullets: boolean; // shop: player bullets become AOE on hit
 }
 
 export interface DropTag {

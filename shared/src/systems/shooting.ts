@@ -5,7 +5,7 @@
 import type { World } from '../ecs/types.js';
 import { fpAdd, toFixed } from '../math/fixed.js';
 import { PLAYER_BULLET_SPEED } from '../constants.js';
-import { createPlayerBullet } from '../factory.js';
+import { createPlayerBullet, createExplosivePlayerBullet } from '../factory.js';
 import type { GameSimulation } from '../simulation.js';
 
 export function createShootingSystem(sim: GameSimulation) {
@@ -39,28 +39,29 @@ export function createShootingSystem(sim: GameSimulation) {
 
       const level = weapon.level;
       const bulletSpeed = PLAYER_BULLET_SPEED;
-      const damage = 1;
+      const damage = 1 + tag.bulletDamageBonus;
+      const fire = tag.explosiveBullets ? createExplosivePlayerBullet : createPlayerBullet;
 
       // Spread pattern based on level
       if (level === 1) {
         // Single shot
-        createPlayerBullet(world, pos.x, fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage, level);
+        fire(world, pos.x, fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage, level);
       } else if (level === 2) {
         // Double shot
-        createPlayerBullet(world, fpAdd(pos.x, toFixed(-8)), fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage, level);
-        createPlayerBullet(world, fpAdd(pos.x, toFixed(8)), fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage, level);
+        fire(world, fpAdd(pos.x, toFixed(-8)), fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage, level);
+        fire(world, fpAdd(pos.x, toFixed(8)), fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage, level);
       } else if (level === 3) {
         // Triple shot
-        createPlayerBullet(world, pos.x, fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage, level);
-        createPlayerBullet(world, fpAdd(pos.x, toFixed(-12)), fpAdd(pos.y, toFixed(-16)), toFixed(-1), bulletSpeed, damage, level);
-        createPlayerBullet(world, fpAdd(pos.x, toFixed(12)), fpAdd(pos.y, toFixed(-16)), toFixed(1), bulletSpeed, damage, level);
+        fire(world, pos.x, fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage, level);
+        fire(world, fpAdd(pos.x, toFixed(-12)), fpAdd(pos.y, toFixed(-16)), toFixed(-1), bulletSpeed, damage, level);
+        fire(world, fpAdd(pos.x, toFixed(12)), fpAdd(pos.y, toFixed(-16)), toFixed(1), bulletSpeed, damage, level);
       } else {
         // Level 4+: wide fan
-        createPlayerBullet(world, pos.x, fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage + 1, level);
-        createPlayerBullet(world, fpAdd(pos.x, toFixed(-10)), fpAdd(pos.y, toFixed(-18)), toFixed(-0.5), bulletSpeed, damage, level);
-        createPlayerBullet(world, fpAdd(pos.x, toFixed(10)), fpAdd(pos.y, toFixed(-18)), toFixed(0.5), bulletSpeed, damage, level);
-        createPlayerBullet(world, fpAdd(pos.x, toFixed(-16)), fpAdd(pos.y, toFixed(-14)), toFixed(-1.5), bulletSpeed, damage, level);
-        createPlayerBullet(world, fpAdd(pos.x, toFixed(16)), fpAdd(pos.y, toFixed(-14)), toFixed(1.5), bulletSpeed, damage, level);
+        fire(world, pos.x, fpAdd(pos.y, toFixed(-20)), 0, bulletSpeed, damage + 1, level);
+        fire(world, fpAdd(pos.x, toFixed(-10)), fpAdd(pos.y, toFixed(-18)), toFixed(-0.5), bulletSpeed, damage, level);
+        fire(world, fpAdd(pos.x, toFixed(10)), fpAdd(pos.y, toFixed(-18)), toFixed(0.5), bulletSpeed, damage, level);
+        fire(world, fpAdd(pos.x, toFixed(-16)), fpAdd(pos.y, toFixed(-14)), toFixed(-1.5), bulletSpeed, damage, level);
+        fire(world, fpAdd(pos.x, toFixed(16)), fpAdd(pos.y, toFixed(-14)), toFixed(1.5), bulletSpeed, damage, level);
       }
     }
   };

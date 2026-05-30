@@ -28,6 +28,7 @@ export function createPlayer(world: World, playerId: number, totalPlayers: numbe
     current: PLAYER_START_HP,
     max: PLAYER_START_HP,
     invulnTicks: 120,
+    frozenTicks: 0,
   });
   world.collider.set(e, {
     radius: PLAYER_HITBOX_RADIUS,
@@ -53,6 +54,70 @@ export function createPlayer(world: World, playerId: number, totalPlayers: numbe
     bombs: PLAYER_START_BOMBS,
     score: 0,
     weaponLevel: 1,
+    lastBombPressed: false,
+    bulletDamageBonus: 0,
+    speedMultiplier: 1,
+    scoreMultiplier: 1,
+    explosiveBullets: false,
+  });
+  return e;
+}
+
+export function createExplosivePlayerBullet(
+  world: World,
+  x: Fixed,
+  y: Fixed,
+  vx: Fixed,
+  vy: Fixed,
+  damage: number,
+  level: number,
+): Entity {
+  const e = createEntity(world);
+  world.position.set(e, { x, y });
+  world.velocity.set(e, { vx, vy });
+  world.collider.set(e, {
+    radius: toFixed(4),
+    layer: CollisionLayer.PlayerBullet,
+    damage,
+  });
+  const w = 6 + level;
+  const h = 10 + level * 2;
+  world.sprite.set(e, {
+    type: SpriteType.ExplosivePlayerBullet,
+    width: w,
+    height: h,
+    color: '#ff3333',
+    frame: 0,
+    animTick: 0,
+  });
+  return e;
+}
+
+export function createBomb(world: World, x: Fixed, y: Fixed): Entity {
+  const e = createEntity(world);
+  world.position.set(e, { x, y });
+  world.velocity.set(e, { vx: 0, vy: toFixed(-6) });
+  world.sprite.set(e, {
+    type: SpriteType.Bomb,
+    width: 16,
+    height: 16,
+    color: '#44ff44',
+    frame: 40, // fuse ticks
+    animTick: 0,
+  });
+  return e;
+}
+
+export function createBombExplosion(world: World, x: Fixed, y: Fixed, size: number): Entity {
+  const e = createEntity(world);
+  world.position.set(e, { x, y });
+  world.sprite.set(e, {
+    type: SpriteType.Explosion,
+    width: size,
+    height: size,
+    color: '#44ff44',
+    frame: 25,
+    animTick: 0,
   });
   return e;
 }
@@ -134,7 +199,7 @@ export function createEnemy(
   const e = createEntity(world);
   world.position.set(e, { x, y });
   world.velocity.set(e, { vx: 0, vy: toFixed(speed) });
-  world.health.set(e, { current: hp, max: hp, invulnTicks: 0 });
+  world.health.set(e, { current: hp, max: hp, invulnTicks: 0, frozenTicks: 0 });
   world.collider.set(e, {
     radius: toFixed(radius),
     layer: CollisionLayer.Enemy,

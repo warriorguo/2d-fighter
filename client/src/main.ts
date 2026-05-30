@@ -15,6 +15,7 @@ import { dropSystem } from 'shared/systems/drop.js';
 import { createWaveSystem, createWaveState, type WaveState } from 'shared/systems/wave.js';
 import { createScoreSystem, createScoreState, type ScoreState } from 'shared/systems/score.js';
 import { createBossSystem, createBossState, type BossState } from 'shared/systems/boss.js';
+import { createBombSystem } from 'shared/systems/bomb.js';
 import type { LevelConfig } from 'shared/config/types.js';
 import type { PlayerInput } from 'shared/input.js';
 import { emptyInput } from 'shared/input.js';
@@ -33,6 +34,12 @@ import { createLobbyState, drawLobby, type LobbyState } from './screens/lobby.js
 import { NetworkClient } from './net/client.js';
 import { LockstepManager } from './net/lockstep.js';
 import { DebugOverlay } from './debug-overlay.js';
+import { drawShop, getShopItemCount } from './screens/shop.js';
+import {
+  loadShopConfig, saveShopConfig, resetShopConfig,
+  SHOP_ITEMS, buyNext, applyShopConfig, bankScores,
+  type ShopConfig,
+} from './shop.js';
 
 import level1Data from '../../data/levels/level1.json';
 import level2Data from '../../data/levels/level2.json';
@@ -67,6 +74,10 @@ let debugOverlay = new DebugOverlay();
 let menuTick = 0;
 let paused = false;
 let pauseSelection = 0;
+let shopConfig: ShopConfig = loadShopConfig();
+let shopSelection = 0;
+let shopFlash: { type: 'nofunds' | 'maxed' | null; ticks: number } = { type: null, ticks: 0 };
+let runBanked = false; // ensure each run banks only once
 
 // Fixed timestep accumulator
 let lastTime = 0;
@@ -112,6 +123,8 @@ function initMenuKeys(): void {
       }
     } else if (screenState.current === 'lobby') {
       handleLobbyKey(e);
+    } else if (screenState.current === 'shop') {
+      handleShopKey(e);
     }
   });
 }
@@ -140,11 +153,49 @@ function handleMenuKey(e: KeyboardEvent): void {
         screenState.current = 'lobby';
         lobbyState = createLobbyState();
       } else if (sel === 2) {
+        // Shop
+        shopSelection = 0;
+        screenState.current = 'shop';
+      } else if (sel === 3) {
         // Controls
         screenState.current = 'controls' as Screen;
       }
       break;
     }
+  }
+}
+
+function handleShopKey(e: KeyboardEvent): void {
+  const count = getShopItemCount();
+  switch (e.code) {
+    case 'Escape':
+      saveShopConfig(shopConfig);
+      screenState.current = 'menu';
+      return;
+    case 'ArrowUp':
+    case 'KeyW':
+      shopSelection = (shopSelection - 1 + count) % count;
+      return;
+    case 'ArrowDown':
+    case 'KeyS':
+      shopSelection = (shopSelection + 1) % count;
+      return;
+    case 'ArrowRight':
+    case 'KeyD':
+    case 'Enter':
+    case 'Space': {
+      const result = buyNext(shopConfig, SHOP_ITEMS[shopSelection]);
+      if (result === 'ok') {
+        saveShopConfig(shopConfig);
+        shopFlash = { type: null, ticks: 0 };
+      } else {
+        shopFlash = { type: result, ticks: 60 }; // ~1s flash
+      }
+      return;
+    }
+    case 'KeyR':
+      shopConfig = resetShopConfig(shopConfig);
+      return;
   }
 }
 
@@ -318,6 +369,14 @@ function startGame(playerCount: number, seed?: number, savedScores?: number[]): 
   for (let i = 0; i < playerCount; i++) {
     createPlayer(sim.world, i, playerCount);
   }
+  // Apply shop config (single-player only — co-op uses defaults to stay in sync)
+  if (!isCoopMode) {
+    applyShopConfig(sim, shopConfig);
+  }
+  // A new run starts here — allow banking again when it ends
+  if (!savedScores) {
+    runBanked = false;
+  }
   if (savedScores) {
     let idx = 0;
     for (const [, tag] of sim.world.playerTag) {
@@ -337,6 +396,7 @@ function startGame(playerCount: number, seed?: number, savedScores?: number[]): 
   sim.addSystem(createMovementSystem(sim));
   sim.addSystem(enemyAISystem);
   sim.addSystem(createShootingSystem(sim));
+  sim.addSystem(createBombSystem(sim));
   sim.addSystem(createBulletPatternSystem(sim));
   sim.addSystem(createCollisionSystem(sim));
   sim.addSystem(dropSystem);
@@ -375,6 +435,12 @@ function loop(now: number): void {
 
     case 'lobby':
       drawLobby(ctx, lobbyState, menuTick);
+      break;
+
+    case 'shop':
+      if (shopFlash.ticks > 0) shopFlash.ticks--;
+      else shopFlash.type = null;
+      drawShop(ctx, shopConfig, shopSelection, menuTick, shopFlash);
       break;
 
     case 'game':
@@ -476,6 +542,10 @@ function checkGameState(): void {
     // Final level cleared — campaign victory
     screenState.results = { victory: true, scores, levelName: 'All Stages Complete' };
     screenState.current = 'results';
+    if (!isCoopMode && !runBanked) {
+      bankScores(shopConfig, scores);
+      runBanked = true;
+    }
     return;
   }
 
@@ -491,6 +561,10 @@ function checkGameState(): void {
   if (allDead) {
     screenState.results = { victory: false, scores, levelName };
     screenState.current = 'results';
+    if (!isCoopMode && !runBanked) {
+      bankScores(shopConfig, scores);
+      runBanked = true;
+    }
   }
 }
 

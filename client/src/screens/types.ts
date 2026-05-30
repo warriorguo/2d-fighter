@@ -2,7 +2,7 @@
  * Screen state types for game flow.
  */
 
-export type Screen = 'menu' | 'lobby' | 'game' | 'pause' | 'results' | 'stageClear';
+export type Screen = 'menu' | 'lobby' | 'game' | 'pause' | 'results' | 'stageClear' | 'shop';
 
 export interface StageClearData {
   clearedName: string;

@@ -68,6 +68,9 @@ export class Renderer {
         case SpriteType.PlayerBullet:
           this.ctx.fillRect(x - hw, y - hh, sprite.width, sprite.height);
           break;
+        case SpriteType.ExplosivePlayerBullet:
+          this.drawExplosiveBullet(x, y, sprite.width, sprite.height);
+          break;
         case SpriteType.Enemy:
           this.drawEnemy(x, y, sprite.width, sprite.height, sprite.color);
           break;
@@ -81,6 +84,9 @@ export class Renderer {
           break;
         case SpriteType.Drop:
           this.drawDrop(x, y, sprite.width, sprite.height, sprite.color);
+          break;
+        case SpriteType.Bomb:
+          this.drawBomb(x, y, sprite.width, sprite.frame);
           break;
         case SpriteType.Explosion:
           this.ctx.globalAlpha = Math.max(0, sprite.frame / 20);
@@ -144,6 +150,34 @@ export class Renderer {
     ctx.fillStyle = '#ffffff44';
     ctx.beginPath();
     ctx.arc(x, y, hw * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  private drawExplosiveBullet(x: number, y: number, w: number, h: number): void {
+    const ctx = this.ctx;
+    // Outer glow
+    ctx.fillStyle = '#ff8844';
+    ctx.fillRect(x - w / 2 - 1, y - h / 2 - 1, w + 2, h + 2);
+    // Hot core
+    ctx.fillStyle = '#ff3333';
+    ctx.fillRect(x - w / 2, y - h / 2, w, h);
+    // Highlight
+    ctx.fillStyle = '#ffdd88';
+    ctx.fillRect(x - 1, y - h / 2 + 1, 2, h - 2);
+  }
+
+  private drawBomb(x: number, y: number, w: number, fuse: number): void {
+    const ctx = this.ctx;
+    const r = w / 2;
+    // Pulse faster as the fuse gets shorter
+    const pulse = 0.7 + 0.3 * Math.sin(fuse * 0.6);
+    ctx.fillStyle = '#44ff44';
+    ctx.beginPath();
+    ctx.arc(x, y, r * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#aaffaa';
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.4, 0, Math.PI * 2);
     ctx.fill();
   }
 

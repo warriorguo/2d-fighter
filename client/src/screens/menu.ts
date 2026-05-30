@@ -7,6 +7,7 @@ import { GAME_WIDTH, GAME_HEIGHT } from 'shared/constants.js';
 const MENU_OPTIONS = [
   'Start Game',
   'Co-op (LAN)',
+  'Shop',
   'Controls',
 ];
 

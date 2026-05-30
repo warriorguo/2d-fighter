@@ -28,7 +28,10 @@ export function createMovementSystem(sim: GameSimulation) {
       }
 
       const input: PlayerInput = sim.inputs[tag.playerId] || sim.inputs[0];
-      const speed = input.slow ? PLAYER_SLOW_SPEED : PLAYER_SPEED;
+      const baseSpeed = input.slow ? PLAYER_SLOW_SPEED : PLAYER_SPEED;
+      const speed = tag.speedMultiplier !== 1
+        ? Math.floor(baseSpeed * tag.speedMultiplier)
+        : baseSpeed;
 
       let vx = 0;
       let vy = 0;

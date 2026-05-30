@@ -173,6 +173,7 @@ function spawnBoss(world: World, bossState: BossState): void {
     current: phaseConfig.hp,
     max: phaseConfig.hp,
     invulnTicks: 60,
+    frozenTicks: 0,
   });
   world.collider.set(entity, {
     radius: toFixed(phaseConfig.radius),

@@ -3,13 +3,36 @@
  */
 
 import type { World, Entity } from '../ecs/types.js';
-import { CollisionLayer, DropType } from '../ecs/types.js';
+import { CollisionLayer, DropType, SpriteType } from '../ecs/types.js';
 import { toFixed, toFloat } from '../math/fixed.js';
 import { destroyEntity } from '../ecs/world.js';
 import { createExplosion, createDrop } from '../factory.js';
 import { PLAYER_INVULN_TICKS } from '../constants.js';
 import type { GameSimulation } from '../simulation.js';
 import { debugLog } from '../debug.js';
+
+const EXPLOSIVE_BULLET_RADIUS = 60; // pixels
+
+function applyBulletDamage(world: World, enemy: Entity, damage: number, sim: GameSimulation): void {
+  const hp = world.health.get(enemy);
+  if (!hp || hp.invulnTicks > 0) return;
+  hp.current -= damage;
+  if (hp.current > 0) return;
+  if (world.bossTag.has(enemy)) return; // boss system handles phase transitions
+  const ePos = world.position.get(enemy);
+  if (ePos) {
+    createExplosion(world, ePos.x, ePos.y, 32);
+    if (sim.rng.nextInt(100) < 20) {
+      const dropTypes = [DropType.WeaponUpgrade, DropType.Bomb, DropType.ScoreSmall, DropType.ScoreLarge];
+      const dt = dropTypes[sim.rng.nextInt(dropTypes.length)];
+      createDrop(world, ePos.x, ePos.y, dt);
+    }
+  }
+  for (const [, tag] of world.playerTag) {
+    tag.score += 100 * tag.scoreMultiplier;
+  }
+  destroyEntity(world, enemy);
+}
 
 /**
  * Circle overlap using float conversion to avoid Q16.16 overflow.
@@ -50,42 +73,33 @@ export function createCollisionSystem(sim: GameSimulation) {
     for (const bullet of playerBullets) {
       const bPos = world.position.get(bullet)!;
       const bCol = world.collider.get(bullet)!;
+      const bSprite = world.sprite.get(bullet);
+      const isExplosive = bSprite?.type === SpriteType.ExplosivePlayerBullet;
       for (const enemy of enemies) {
         const ePos = world.position.get(enemy)!;
         const eCol = world.collider.get(enemy)!;
-        if (circleOverlap(bPos.x, bPos.y, bCol.radius, ePos.x, ePos.y, eCol.radius)) {
-          // Damage enemy
-          const hp = world.health.get(enemy);
-          if (hp) {
-            if (hp.invulnTicks > 0) {
-              destroyEntity(world, bullet);
-              break;
-            }
-            hp.current -= bCol.damage;
-            debugLog.log('HIT', `Enemy#${enemy} hit dmg=${bCol.damage} hp=${hp.current}/${hp.max}`);
-            if (hp.current <= 0) {
-              // Boss entities are handled by the boss system (phase transitions / defeat)
-              const isBoss = world.bossTag.has(enemy);
-              if (!isBoss) {
-                debugLog.log('KILL', `Enemy#${enemy} killed at (${toFloat(ePos.x).toFixed(0)}, ${toFloat(ePos.y).toFixed(0)})`);
-                createExplosion(world, ePos.x, ePos.y, 32);
-                // Score
-                for (const [, tag] of world.playerTag) {
-                  tag.score += 100;
-                }
-                // Random drop
-                if (sim.rng.nextInt(100) < 20) {
-                  const dropTypes = [DropType.WeaponUpgrade, DropType.Bomb, DropType.ScoreSmall, DropType.ScoreLarge];
-                  const dt = dropTypes[sim.rng.nextInt(dropTypes.length)];
-                  createDrop(world, ePos.x, ePos.y, dt);
-                }
-                destroyEntity(world, enemy);
-              }
+        if (!circleOverlap(bPos.x, bPos.y, bCol.radius, ePos.x, ePos.y, eCol.radius)) continue;
+
+        if (isExplosive) {
+          createExplosion(world, bPos.x, bPos.y, 64);
+          debugLog.log('BOOM', `Explosive bullet at (${toFloat(bPos.x).toFixed(0)}, ${toFloat(bPos.y).toFixed(0)})`);
+          const r2 = EXPLOSIVE_BULLET_RADIUS * EXPLOSIVE_BULLET_RADIUS;
+          for (const other of enemies) {
+            const oPos = world.position.get(other);
+            if (!oPos) continue;
+            const dx = toFloat(bPos.x - oPos.x);
+            const dy = toFloat(bPos.y - oPos.y);
+            if (dx * dx + dy * dy < r2) {
+              applyBulletDamage(world, other, bCol.damage, sim);
             }
           }
-          destroyEntity(world, bullet);
-          break;
+        } else {
+          debugLog.log('HIT', `Enemy#${enemy} hit dmg=${bCol.damage}`);
+          applyBulletDamage(world, enemy, bCol.damage, sim);
         }
+
+        destroyEntity(world, bullet);
+        break;
       }
     }
 
@@ -166,10 +180,10 @@ export function createCollisionSystem(sim: GameSimulation) {
                 if (hp) hp.current = Math.min(hp.current + 1, hp.max);
                 break;
               case DropType.ScoreSmall:
-                tag.score += 200;
+                tag.score += 200 * tag.scoreMultiplier;
                 break;
               case DropType.ScoreLarge:
-                tag.score += 1000;
+                tag.score += 1000 * tag.scoreMultiplier;
                 break;
             }
           }
